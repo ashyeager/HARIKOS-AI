@@ -9,6 +9,9 @@ const stubClient = {
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
     signInWithOtp: async () => ({ data: { user: null, session: null }, error: null }),
     signOut: async () => ({ error: null }),
+    signUp: async () => ({ data: { user: null, session: null }, error: null }),
+    resetPasswordForEmail: async () => ({ data: {}, error: null }),
+    getUser: async () => ({ data: { user: null }, error: null }),
   },
   from: () => ({
     insert: async () => ({ data: null, error: null }),
@@ -21,8 +24,8 @@ const stubClient = {
 export const supabase = (supabaseUrl && supabaseAnonKey)
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
-        persistSession: false,
-        autoRefreshToken: false,
+        persistSession: true,
+        autoRefreshToken: true,
       },
     })
   : (stubClient as any);

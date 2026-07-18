@@ -6,6 +6,7 @@ import ScrollProgress from "./components/ScrollProgress";
 import { useSectionTracking } from "./hooks/useSectionTracking";
 import { UserAuthProvider } from "./contexts/UserAuthContext";
 import Footer from "./components/Footer";
+import Dashboard from "./pages/Dashboard";
 
 // Pages
 import Home from "./pages/Home";
@@ -34,6 +35,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
 

@@ -5,7 +5,7 @@ import { LogOut, Settings, Shield, User as UserIcon, Camera, Trash2, Check } fro
 
 export default function Profile() {
   const { user, isAuthLoading, logOut } = useUserAuth();
-  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name as string || '');
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -67,8 +67,8 @@ export default function Profile() {
             
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="relative group">
-                {user.photoURL ? (
-                  <img src={user.photoURL} alt={user.displayName || 'Profile'} className="w-24 h-24 rounded-full border border-brand-white/10" />
+                {user.user_metadata?.avatar_url ? (
+                  <img src={user.user_metadata.avatar_url as string} alt={displayName || 'Profile'} className="w-24 h-24 rounded-full border border-brand-white/10" />
                 ) : (
                   <div className="w-24 h-24 rounded-full bg-brand-white/10 border border-brand-white/10 flex items-center justify-center">
                     <UserIcon className="w-10 h-10 text-brand-white/50" />
@@ -80,7 +80,7 @@ export default function Profile() {
               </div>
               
               <div>
-                <h2 className="text-xl font-display text-brand-white">{user.displayName || 'User'}</h2>
+                <h2 className="text-xl font-display text-brand-white">{displayName || 'User'}</h2>
                 <p className="text-sm text-brand-gray-400">{user.email}</p>
               </div>
               
@@ -167,7 +167,7 @@ export default function Profile() {
                 )}
                 <button 
                   onClick={handleUpdateProfile}
-                  disabled={isSaving || displayName === user.displayName}
+                  disabled={isSaving || displayName === (user.user_metadata?.full_name as string || '')}
                   className="px-6 py-2.5 bg-brand-white text-brand-black text-sm font-medium rounded-lg hover:bg-brand-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {isSaving ? (
