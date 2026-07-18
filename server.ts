@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import { createClient } from "@supabase/supabase-js";
 import { createServer as createViteServer } from "vite";
 import * as dotenv from "dotenv";
 import { requireAuth, AuthRequest } from "./src/middleware/auth.ts";
@@ -12,6 +13,7 @@ import { Resend } from "resend";
 dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy'); // Use real key if available
+const adminEmail = process.env.ADMIN_EMAIL || 'ashyeagerhq@gmail.com';
 
 async function startServer() {
   const app = express();
@@ -50,86 +52,79 @@ async function startServer() {
     }
   });
 
-  // Project Inquiry submission
-  app.post("/api/leads", async (req, res) => {
+  const handleProjectInquiry = async (req: express.Request, res: express.Response) => {
     try {
-      const { name, email, company, industry, service, goal, budget, message, userId } = req.body;
+      const { full_name, email, company, industry, service, budget, description, user_id } = req.body;
 
-      if (!name || !email || !company || !industry || !service || !goal || !message) {
+      if (!full_name || !email || !company || !industry || !service || !description) {
         return res.status(400).json({ error: "All required fields must be provided" });
       }
 
-      const leadData = {
-        name,
-        email,
-        company,
+      const inquiry = {
+        user_id: user_id || null,
+        full_name: full_name.trim(),
+        email: email.trim(),
+        company: company.trim(),
         industry,
         service,
-        goal,
         budget: budget || null,
-        message,
-        userId: userId || null,
+        description: description.trim(),
         status: "New",
-        createdAt: new Date(),
+        created_at: new Date().toISOString(),
       };
 
-      // Store in Firebase leads collection
-      const leadRef = await adminDb.collection("leads").add(leadData);
-
-      // If user is logged in, attach to user profile
-      if (userId) {
-        await adminDb
-          .collection("users")
-          .doc(userId)
-          .collection("projects")
-          .doc(leadRef.id)
-          .set({ ...leadData, leadId: leadRef.id });
+      if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+          auth: { persistSession: false, autoRefreshToken: false },
+        });
+        await supabase.from("project_requests").insert(inquiry);
       }
 
-      // Send email to admin
       if (process.env.RESEND_API_KEY) {
         await resend.emails.send({
-          from: "HARIKOS AI <inquiries@harikos.ai>", // This needs to be a verified domain in Resend
-          to: "admin@harikos.ai", // Should be the HARIKOS admin email
+          from: "HARIKOS AI <onboarding@resend.dev>",
+          to: [adminEmail],
           subject: "New HARIKOS Project Inquiry",
           html: `
             <h3>New project request received.</h3>
-            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Name:</strong> ${full_name}</p>
             <p><strong>Company:</strong> ${company}</p>
             <p><strong>Email:</strong> ${email}</p>
             <p><strong>Industry:</strong> ${industry}</p>
             <p><strong>Service:</strong> ${service}</p>
-            <p><strong>Goal:</strong> ${goal}</p>
             <p><strong>Budget:</strong> ${budget || 'Not specified'}</p>
-            <p><strong>Message:</strong></p>
-            <p>${message.replace(/\n/g, '<br/>')}</p>
+            <p><strong>Project Description:</strong></p>
+            <p>${description.replace(/\n/g, '<br/>')}</p>
             <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
           `,
         });
 
-        // Send confirmation email to client
         await resend.emails.send({
-          from: "HARIKOS AI <inquiries@harikos.ai>",
-          to: email,
-          subject: "Your HARIKOS project inquiry has been received",
+          from: "HARIKOS AI <onboarding@resend.dev>",
+          to: [email],
+          subject: "We've received your HARIKOS AI project inquiry",
           html: `
-            <p>Hello ${name},</p>
+            <p>Hello ${full_name},</p>
             <p>Thank you for contacting HARIKOS AI.</p>
-            <p>We have received your project request and will review your goals.</p>
-            <p>Our team will get back to you shortly.</p>
+            <p>We have successfully received your project inquiry.</p>
             <p>For faster communication:<br/>
-            Instagram: @harikos.ai</p>
+            Instagram: @harikos.ai<br/>
+            Phone: +968 95703688<br/>
+            Email: ashyeagerhq@gmail.com</p>
             <p>HARIKOS AI</p>
           `,
         });
       }
 
-      res.json({ success: true, leadId: leadRef.id });
+      res.json({ success: true, message: "Project inquiry received successfully." });
     } catch (error) {
       console.error('Error processing lead:', error);
       res.status(500).json({ error: 'Failed to process project inquiry' });
     }
-  });
+  };
+
+  app.post("/api/project-requests", handleProjectInquiry);
+  app.post("/api/leads", handleProjectInquiry);
 
   // Auth sync route
   app.post("/api/auth/sync", requireAuth as any, async (req: AuthRequest, res: express.Response) => {

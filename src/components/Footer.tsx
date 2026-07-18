@@ -49,7 +49,7 @@ export default function Footer() {
           
           <div className="flex items-center gap-3.5 pt-2">
             {[
-              { icon: Mail, href: "mailto:harikoshq@gmail.com", label: "Email" },
+              { icon: Mail, href: "mailto:ashyeagerhq@gmail.com", label: "Email" },
               { icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" },
               { icon: Instagram, href: "https://instagram.com/harikos.ai", label: "Instagram" },
               { icon: Twitter, href: "https://x.com/harikos.ai", label: "X / Twitter" }
