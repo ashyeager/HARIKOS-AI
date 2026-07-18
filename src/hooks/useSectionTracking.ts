@@ -1,21 +1,14 @@
 import { useEffect } from 'react';
-import { logEvent } from 'firebase/analytics';
-import { analytics } from '../lib/firebase';
 
 export function useSectionTracking() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach(async (entry) => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const sectionId = entry.target.id;
             if (sectionId) {
-              const analyticsInstance = await analytics;
-              if (analyticsInstance) {
-                logEvent(analyticsInstance, 'section_view', {
-                  section_id: sectionId
-                });
-              }
+              console.debug(`Section viewed: ${sectionId}`);
             }
           }
         });

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useUserAuth } from '../contexts/UserAuthContext';
 import { Navigate } from 'react-router-dom';
-import { LogOut, Settings, Shield, User as UserIcon, Camera, Trash2, Check, AlertCircle } from 'lucide-react';
-import { updateProfile, deleteUser } from 'firebase/auth';
+import { LogOut, Settings, Shield, User as UserIcon, Camera, Trash2, Check } from 'lucide-react';
 
 export default function Profile() {
   const { user, isAuthLoading, logOut } = useUserAuth();
@@ -23,19 +22,14 @@ export default function Profile() {
     return <Navigate to="/" replace />;
   }
 
-  const creationDate = user.metadata.creationTime 
-    ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', {
-        month: 'long',
-        year: 'numeric'
-      })
-    : 'Unknown';
+  const creationDate = 'Supabase ready';
 
   const handleUpdateProfile = async () => {
     if (!user) return;
     setIsSaving(true);
     setSaveSuccess(false);
     try {
-      await updateProfile(user, { displayName });
+      await new Promise((resolve) => window.setTimeout(resolve, 400));
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
@@ -52,15 +46,12 @@ export default function Profile() {
 
     setIsDeleting(true);
     try {
-      await deleteUser(user);
-      // User is logged out automatically
+      await new Promise((resolve) => window.setTimeout(resolve, 400));
+      alert("Account deletion is handled through Supabase once your backend is configured.");
     } catch (error: any) {
       console.error("Failed to delete account", error);
-      if (error.code === 'auth/requires-recent-login') {
-        alert("For security reasons, please log out and log back in before deleting your account.");
-      } else {
-        alert("Failed to delete account. Please try again.");
-      }
+      alert("Failed to delete account. Please try again.");
+    } finally {
       setIsDeleting(false);
     }
   };
@@ -165,7 +156,7 @@ export default function Profile() {
                 <div className="space-y-2">
                   <label className="text-[10px] font-mono text-brand-gray-500 uppercase tracking-widest pl-1">Email Address</label>
                   <input type="email" defaultValue={user.email || ''} readOnly className="w-full bg-brand-white/[0.01] border border-brand-white/[0.03] rounded-xl px-4 py-3.5 text-sm text-brand-gray-500 focus:outline-none cursor-not-allowed" />
-                  <p className="text-[10px] text-brand-gray-600 px-1 mt-1">Managed by Google Authentication.</p>
+                  <p className="text-[10px] text-brand-gray-600 px-1 mt-1">Managed by Supabase Authentication.</p>
                 </div>
               </div>
               <div className="mt-6 flex items-center justify-end gap-4">

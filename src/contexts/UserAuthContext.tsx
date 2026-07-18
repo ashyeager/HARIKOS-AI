@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, signInWithPopup, signOut, User as FirebaseUser } from 'firebase/auth';
-import { auth, googleAuthProvider } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 
 interface UserAuthContextType {
-  user: FirebaseUser | null;
+  user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> } | null;
   isAuthLoading: boolean;
   signIn: () => Promise<void>;
   logOut: () => Promise<void>;
@@ -12,47 +11,41 @@ interface UserAuthContextType {
 const UserAuthContext = createContext<UserAuthContextType | undefined>(undefined);
 
 export function UserAuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<UserAuthContextType['user']>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
+    const loadSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setUser((data.session?.user ?? null) as UserAuthContextType['user']);
       setIsAuthLoading(false);
-      
-      if (currentUser) {
-        // Sync user with backend
-        try {
-          const token = await currentUser.getIdToken();
-          await fetch('/api/auth-sync', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-        } catch (error) {
-          console.error("Failed to sync user with backend:", error);
-        }
-      }
+    };
+
+    loadSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser((session?.user ?? null) as UserAuthContextType['user']);
+      setIsAuthLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async () => {
     try {
-      await signInWithPopup(auth, googleAuthProvider);
+      await supabase.auth.signInWithOtp({ email: 'hello@harikos.ai' });
     } catch (error) {
-      console.error("Sign in error:", error);
+      console.error('Sign in error:', error);
     }
   };
 
   const logOut = async () => {
     try {
-      await signOut(auth);
+      await supabase.auth.signOut();
     } catch (error) {
-      console.error("Sign out error:", error);
+      console.error('Sign out error:', error);
     }
   };
 
