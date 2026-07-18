@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import Navbar from "./components/Navbar";
 import BackgroundEffects from "./components/BackgroundEffects";
 import ChatAssistant from "./components/ChatAssistant";
@@ -53,6 +54,7 @@ export default function App() {
       <Router>
         <AppContent />
       </Router>
+      <Analytics />
     </UserAuthProvider>
   );
 }
