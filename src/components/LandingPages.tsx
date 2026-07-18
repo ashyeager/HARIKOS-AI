@@ -25,6 +25,13 @@ const features = [
   },
 ];
 
+const featuredWork = {
+  title: "Red Chickz Oman",
+  description:
+    "A premium branded experience crafted to feel polished, modern, and conversion-ready.",
+  href: "https://diddy-s-meat.ai.studio",
+};
+
 export default function LandingPages() {
   const containerRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
@@ -175,6 +182,39 @@ export default function LandingPages() {
                 </motion.div>
               )
             })}
+
+            <motion.a
+              href={featuredWork.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.45 }}
+              className="group relative block overflow-hidden rounded-2xl border border-brand-white/[0.08] bg-gradient-to-br from-brand-white/[0.04] via-brand-white/[0.02] to-transparent p-5 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] transition-all duration-300 hover:-translate-y-1 hover:border-brand-white/[0.16] hover:bg-brand-white/[0.05]"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_42%)] opacity-70" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[10px] font-mono uppercase tracking-[0.24em] text-brand-gray-500">
+                    Our Work
+                  </span>
+                  <div className="rounded-full border border-brand-white/[0.1] bg-brand-white/[0.04] p-2 transition-transform duration-300 group-hover:translate-x-1 group-hover:translate-y-[-1px]">
+                    <ExternalLink className="w-3.5 h-3.5 text-brand-gray-400" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-medium text-brand-white mb-2">
+                  {featuredWork.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-brand-gray-400">
+                  {featuredWork.description}
+                </p>
+                <div className="mt-4 inline-flex items-center gap-2 text-sm text-brand-gray-300">
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
+                  {featuredWork.href.replace("https://", "")}
+                </div>
+              </div>
+            </motion.a>
           </div>
 
         </div>
