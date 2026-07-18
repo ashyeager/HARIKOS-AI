@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { X, Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -7,9 +7,10 @@ interface AuthModalProps {
   onClose: () => void;
   mode: 'signin' | 'signup' | 'forgot';
   onModeChange: (mode: 'signin' | 'signup' | 'forgot') => void;
+  onAuthenticated?: () => void;
 }
 
-export default function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, mode, onModeChange, onAuthenticated }: AuthModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -36,7 +37,7 @@ export default function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthM
     return 'Welcome back';
   }, [mode]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setMessage(null);
@@ -58,21 +59,29 @@ export default function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthM
           password,
           options: {
             data: { full_name: fullName },
-            emailRedirectTo: `${window.location.origin}/profile`,
+            emailRedirectTo: `${window.location.origin}/dashboard`,
           },
         });
         if (error) throw error;
         if (data.session) {
           setMessage('Account created. You are signed in.');
+          onAuthenticated?.();
         } else {
-          setMessage('Account created. Please confirm your email if required.');
+          setMessage('Account created. Please confirm your email if needed.');
+          onClose();
         }
         return;
       }
 
-      const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: `${window.location.origin}/profile` } });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      setMessage('A sign-in link has been sent to your inbox.');
+      if (data.session) {
+        setMessage('Signed in successfully.');
+        onAuthenticated?.();
+      } else {
+        setMessage('Sign-in succeeded. Redirecting you to your dashboard.');
+        onAuthenticated?.();
+      }
     } catch (err: any) {
       setError(err?.message || 'Authentication failed.');
     } finally {
@@ -131,7 +140,7 @@ export default function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthM
           {error && <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">{error}</div>}
 
           <button type="submit" disabled={isSubmitting} className="w-full rounded-2xl bg-brand-white px-4 py-3 text-sm font-semibold text-brand-black transition hover:bg-brand-gray-300 disabled:opacity-50">
-            {isSubmitting ? 'Please wait…' : mode === 'forgot' ? 'Send reset link' : mode === 'signup' ? 'Create account' : 'Send sign-in link'}
+            {isSubmitting ? 'Please wait…' : mode === 'forgot' ? 'Send reset link' : mode === 'signup' ? 'Create account' : 'Sign in'}
           </button>
         </form>
 

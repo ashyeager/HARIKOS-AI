@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, X, ArrowUpRight, Terminal, User } from "lucide-react";
+import { Menu, X, Terminal, User, LayoutDashboard, Settings as SettingsIcon, LogOut } from "lucide-react";
 import { useUserAuth } from "../contexts/UserAuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
-  const { user, isAuthLoading, signIn, logOut } = useUserAuth();
+  const { user, isAuthLoading, logOut } = useUserAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,12 +35,18 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSignIn = async () => {
-    await signIn();
+  const handleSignIn = () => {
+    if (user) {
+      navigate('/dashboard');
+      return;
+    }
+    navigate('/');
+    window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: { mode: 'signin' } }));
   };
 
   const handleSignOut = async () => {
     await logOut();
+    navigate('/');
   };
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -160,11 +167,14 @@ export default function Navbar() {
                           <p className="text-xs text-brand-gray-400 truncate">{user.email}</p>
                         </div>
                         <div className="py-1">
-                          <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="block w-full text-left px-4 py-2 text-sm text-brand-gray-300 hover:bg-brand-white/5 hover:text-brand-white transition-colors">
-                            View Profile
+                          <Link to="/dashboard" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-brand-gray-300 hover:bg-brand-white/5 hover:text-brand-white transition-colors">
+                            <LayoutDashboard className="w-4 h-4" /> Dashboard
                           </Link>
-                          <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="block w-full text-left px-4 py-2 text-sm text-brand-gray-300 hover:bg-brand-white/5 hover:text-brand-white transition-colors">
-                            Settings
+                          <Link to="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-brand-gray-300 hover:bg-brand-white/5 hover:text-brand-white transition-colors">
+                            <User className="w-4 h-4" /> Profile
+                          </Link>
+                          <Link to="/settings" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-brand-gray-300 hover:bg-brand-white/5 hover:text-brand-white transition-colors">
+                            <SettingsIcon className="w-4 h-4" /> Settings
                           </Link>
                         </div>
                         <div className="border-t border-brand-white/10 py-1">
@@ -173,9 +183,9 @@ export default function Navbar() {
                               setIsDropdownOpen(false);
                               handleSignOut();
                             }}
-                            className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 transition-colors"
+                            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 transition-colors"
                           >
-                            Sign Out
+                            <LogOut className="w-4 h-4" /> Sign Out
                           </button>
                         </div>
                       </motion.div>
@@ -253,11 +263,14 @@ export default function Navbar() {
                           <div className="text-xs text-brand-gray-400">{user.email}</div>
                         </div>
                       </div>
-                      <Link to="/profile" onClick={() => setIsOpen(false)} className="block w-full py-2 px-3 text-left text-sm text-brand-gray-300 hover:text-brand-white hover:bg-brand-white/5 rounded-lg transition-colors">
-                        View Profile
+                      <Link to="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center gap-2 w-full py-2 px-3 text-left text-sm text-brand-gray-300 hover:text-brand-white hover:bg-brand-white/5 rounded-lg transition-colors">
+                        <LayoutDashboard className="w-4 h-4" /> Dashboard
                       </Link>
-                      <Link to="/profile" onClick={() => setIsOpen(false)} className="block w-full py-2 px-3 text-left text-sm text-brand-gray-300 hover:text-brand-white hover:bg-brand-white/5 rounded-lg transition-colors">
-                        Settings
+                      <Link to="/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-2 w-full py-2 px-3 text-left text-sm text-brand-gray-300 hover:text-brand-white hover:bg-brand-white/5 rounded-lg transition-colors">
+                        <User className="w-4 h-4" /> Profile
+                      </Link>
+                      <Link to="/settings" onClick={() => setIsOpen(false)} className="flex items-center gap-2 w-full py-2 px-3 text-left text-sm text-brand-gray-300 hover:text-brand-white hover:bg-brand-white/5 rounded-lg transition-colors">
+                        <SettingsIcon className="w-4 h-4" /> Settings
                       </Link>
                       <div className="h-[1px] bg-brand-white/10 my-1" />
                       <button

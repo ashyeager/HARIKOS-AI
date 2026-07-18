@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useUserAuth } from '../contexts/UserAuthContext';
 import { Navigate } from 'react-router-dom';
 import { LogOut, Settings, Shield, User as UserIcon, Camera, Trash2, Check } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 export default function Profile() {
   const { user, isAuthLoading, logOut } = useUserAuth();
@@ -29,11 +30,17 @@ export default function Profile() {
     setIsSaving(true);
     setSaveSuccess(false);
     try {
-      await new Promise((resolve) => window.setTimeout(resolve, 400));
+      const { error } = await supabase.auth.updateUser({
+        data: { full_name: displayName.trim() },
+      });
+
+      if (error) throw error;
+
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
-      console.error("Failed to update profile", error);
+      console.error('Failed to update profile', error);
+      alert('We could not update your profile right now.');
     } finally {
       setIsSaving(false);
     }
@@ -74,7 +81,7 @@ export default function Profile() {
                     <UserIcon className="w-10 h-10 text-brand-white/50" />
                   </div>
                 )}
-                <button className="absolute bottom-0 right-0 p-2 bg-brand-black border border-brand-white/10 rounded-full text-brand-white hover:bg-brand-white/10 transition-colors">
+                <button className="absolute bottom-0 right-0 p-2 bg-brand-black border border-brand-white/10 rounded-full text-brand-white hover:bg-brand-white/10 transition-colors" type="button">
                   <Camera className="w-4 h-4" />
                 </button>
               </div>
