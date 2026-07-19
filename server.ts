@@ -6,7 +6,6 @@ import * as dotenv from "dotenv";
 import { requireAuth, AuthRequest } from "./src/middleware/auth.ts";
 import { getOrCreateUser } from "./src/db/users.ts";
 import { createContactRequest } from "./src/db/contactRequests.ts";
-import { adminAuth, adminDb } from "./src/lib/firebase-admin.ts";
 import compression from "compression";
 import { Resend } from "resend";
 
@@ -32,19 +31,6 @@ async function startServer() {
       
       const request = await createContactRequest({ name, business, email, service, message });
       
-      // Automatically sign them up for Firebase Auth
-      try {
-        await adminAuth.createUser({
-          email,
-          displayName: name,
-        });
-      } catch (authError: any) {
-        // Ignore if user already exists, log other errors
-        if (authError.code !== 'auth/email-already-exists') {
-          console.error('Error creating Firebase user:', authError);
-        }
-      }
-
       res.json({ success: true, request });
     } catch (error) {
       console.error('Error saving contact request:', error);

@@ -1,13 +1,14 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import type { AuthUser } from '../types/auth';
 
 interface UserAuthContextType {
   user: AuthUser | null;
+  session: Session | null;
   isAuthLoading: boolean;
-  signIn: () => Promise<void>;
-  signUp: (email: string, password: string, fullName: string) => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
+  authError: string | null;
+  signInWithGoogle: (nextPath?: string) => Promise<void>;
   logOut: () => Promise<void>;
 }
 
@@ -15,19 +16,30 @@ const UserAuthContext = createContext<UserAuthContextType | undefined>(undefined
 
 export function UserAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setUser((data.session?.user ?? null) as AuthUser | null);
+      if (!isSupabaseConfigured) {
+        setAuthError('Authentication is not configured yet. Please contact HARIKOS.');
+        setIsAuthLoading(false);
+        return;
+      }
+      const { data, error } = await supabase.auth.getSession();
+      if (error) setAuthError(error.message);
+      setSession(data.session);
+      setUser(data.session?.user ?? null);
       setIsAuthLoading(false);
     };
 
     loadSession();
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser((session?.user ?? null) as AuthUser | null);
+      setSession(session);
+      setUser(session?.user ?? null);
+      setAuthError(null);
       setIsAuthLoading(false);
     });
 
@@ -36,29 +48,32 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const signIn = async () => {
-    // UI entry point handled by modal; placeholder for compatibility.
-    return;
-  };
-
-  const signUp = async (email: string, password: string, fullName: string) => {
-    await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } },
+  const signInWithGoogle = async (nextPath = '/dashboard') => {
+    if (!isSupabaseConfigured) {
+      throw new Error('Authentication is not configured yet. Please contact HARIKOS.');
+    }
+    setAuthError(null);
+    const safeNextPath = nextPath.startsWith('/') ? nextPath : '/dashboard';
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNextPath)}`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo },
     });
-  };
-
-  const resetPassword = async (email: string) => {
-    await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
+    if (error) {
+      setAuthError(error.message);
+      throw error;
+    }
   };
 
   const logOut = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   };
 
+  const value = useMemo(() => ({ user, session, isAuthLoading, authError, signInWithGoogle, logOut }), [user, session, isAuthLoading, authError]);
+
   return (
-    <UserAuthContext.Provider value={{ user, isAuthLoading, signIn, signUp, resetPassword, logOut }}>
+    <UserAuthContext.Provider value={value}>
       {children}
     </UserAuthContext.Provider>
   );

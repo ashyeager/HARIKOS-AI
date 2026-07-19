@@ -8,7 +8,7 @@ A premium, production-ready landing page for Harikos AI—an AI Automation Studi
 - Styling: Tailwind CSS
 - 3D visuals: Three.js, React Three Fiber
 - Backend: Vercel Serverless API routes
-- Authentication: Firebase
+- Authentication: Supabase Auth (Google OAuth)
 
 ## Local Setup
 
@@ -33,14 +33,21 @@ This project is configured for Vercel.
 - Output directory: dist
 - API routes are served from the api folder
 
-### Required environment variables
+### Supabase authentication
 
-- VITE_FIREBASE_API_KEY
-- VITE_FIREBASE_AUTH_DOMAIN
-- VITE_FIREBASE_PROJECT_ID
-- VITE_FIREBASE_STORAGE_BUCKET
-- VITE_FIREBASE_MESSAGING_SENDER_ID
-- VITE_FIREBASE_APP_ID
-- VITE_FIREBASE_MEASUREMENT_ID
+1. Create a Supabase project and enable **Google** under Authentication → Providers.
+2. Add the Google OAuth client ID and secret in Supabase (never in this repository).
+3. In Authentication → URL Configuration, set the Site URL to your Vercel production URL and add these Redirect URLs:
+   - `http://localhost:3000/auth/callback`
+   - `http://localhost:5173/auth/callback` (if using `vite` directly)
+   - `https://YOUR-VERCEL-DOMAIN/auth/callback`
+4. Add the following variables in Vercel for Production, Preview, and Development as appropriate:
+
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `SUPABASE_URL` (server-only; used by privileged API routes)
+   - `SUPABASE_SERVICE_ROLE_KEY` (server-only; never prefix this with `VITE_`)
+
+The browser only receives the two `VITE_` variables. Google OAuth sessions are persisted and refreshed by Supabase.
 
 For full contact-form functionality, wire the form handlers to a real email provider or backend service.

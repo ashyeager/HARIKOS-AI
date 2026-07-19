@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from './types';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 
@@ -9,8 +9,8 @@ const adminEmail = process.env.ADMIN_EMAIL || 'ashyeagerhq@gmail.com';
 const fromEmail = process.env.RESEND_FROM_EMAIL || 'HARIKOS AI <onboarding@resend.dev>';
 
 function getSupabaseAdminClient() {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !serviceRoleKey) {
     return null;

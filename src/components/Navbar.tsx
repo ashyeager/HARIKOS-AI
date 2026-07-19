@@ -144,8 +144,8 @@ export default function Navbar() {
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center gap-2 hover:bg-brand-white/5 px-2 py-1.5 rounded-full transition-colors"
                   >
-                    {user.photoURL ? (
-                      <img src={user.photoURL} alt={user.displayName || 'User'} className="w-8 h-8 rounded-full border border-brand-white/10" />
+                    {typeof user.user_metadata.avatar_url === 'string' ? (
+                      <img src={user.user_metadata.avatar_url} alt={(user.user_metadata.full_name as string) || 'User'} className="w-8 h-8 rounded-full border border-brand-white/10" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-brand-white/10 flex items-center justify-center border border-brand-white/10">
                         <User className="w-4 h-4 text-brand-white" />
@@ -163,7 +163,7 @@ export default function Navbar() {
                         className="absolute right-0 mt-2 w-48 bg-brand-black/90 backdrop-blur-xl border border-brand-white/10 rounded-2xl shadow-xl overflow-hidden py-1 z-50"
                       >
                         <div className="px-4 py-3 border-b border-brand-white/10">
-                          <p className="text-sm font-medium text-brand-white truncate">{user.displayName}</p>
+                          <p className="text-sm font-medium text-brand-white truncate">{(user.user_metadata.full_name as string) || user.email?.split('@')[0] || 'HARIKOS client'}</p>
                           <p className="text-xs text-brand-gray-400 truncate">{user.email}</p>
                         </div>
                         <div className="py-1">
@@ -251,15 +251,15 @@ export default function Navbar() {
                   user ? (
                     <div className="flex flex-col gap-2 mb-2 p-4 border border-brand-white/[0.1] rounded-2xl bg-brand-white/[0.02]">
                       <div className="flex items-center gap-3 mb-2 pb-3 border-b border-brand-white/10">
-                        {user.photoURL ? (
-                          <img src={user.photoURL} alt={user.displayName || 'User'} className="w-10 h-10 rounded-full" />
+                        {typeof user.user_metadata.avatar_url === 'string' ? (
+                          <img src={user.user_metadata.avatar_url} alt={(user.user_metadata.full_name as string) || 'User'} className="w-10 h-10 rounded-full" />
                         ) : (
                           <div className="w-10 h-10 rounded-full bg-brand-white/10 flex items-center justify-center">
                             <User className="w-5 h-5 text-brand-white" />
                           </div>
                         )}
                         <div>
-                          <div className="text-sm font-medium text-brand-white">{user.displayName}</div>
+                          <div className="text-sm font-medium text-brand-white">{(user.user_metadata.full_name as string) || user.email?.split('@')[0] || 'HARIKOS client'}</div>
                           <div className="text-xs text-brand-gray-400">{user.email}</div>
                         </div>
                       </div>

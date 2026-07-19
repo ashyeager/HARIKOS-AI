@@ -9,6 +9,7 @@ import { UserAuthProvider } from "./contexts/UserAuthContext";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthModal from "./components/AuthModal";
+import AuthCallback from "./components/AuthCallback";
 import Dashboard from "./pages/Dashboard";
 
 // Pages
@@ -21,20 +22,23 @@ function AppContent() {
   useSectionTracking();
   const location = useLocation();
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
   const portalRoutes = ['/dashboard', '/profile', '/settings'];
   const isPortalPage = portalRoutes.includes(location.pathname);
 
   useEffect(() => {
     const handleOpenAuthModal = (event: Event) => {
-      const customEvent = event as CustomEvent<{ mode?: 'signin' | 'signup' | 'forgot' }>;
-      setAuthMode(customEvent.detail?.mode || 'signin');
       setAuthModalOpen(true);
     };
 
     window.addEventListener('open-auth-modal', handleOpenAuthModal as EventListener);
     return () => window.removeEventListener('open-auth-modal', handleOpenAuthModal as EventListener);
   }, []);
+
+  useEffect(() => {
+    if ((location.state as { authModal?: string } | null)?.authModal === 'signin') {
+      setAuthModalOpen(true);
+    }
+  }, [location.state]);
 
   return (
     <div className="relative min-h-screen bg-brand-black text-brand-gray-100 overflow-x-hidden selection:bg-brand-white selection:text-brand-black">
@@ -55,18 +59,13 @@ function AppContent() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
 
         <AuthModal
           isOpen={authModalOpen}
           onClose={() => setAuthModalOpen(false)}
-          mode={authMode}
-          onModeChange={setAuthMode}
-          onAuthenticated={() => {
-            setAuthModalOpen(false);
-            window.location.assign('/dashboard');
-          }}
         />
 
         {/* Footer */}
@@ -88,4 +87,3 @@ export default function App() {
     </UserAuthProvider>
   );
 }
-
