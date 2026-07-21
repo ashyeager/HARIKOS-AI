@@ -11,7 +11,7 @@ import { Resend } from "resend";
 
 dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy'); // Use real key if available
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const adminEmail = process.env.ADMIN_EMAIL || 'ashyeagerhq@gmail.com';
 
 async function startServer() {
@@ -46,6 +46,10 @@ async function startServer() {
         return res.status(400).json({ error: "All required fields must be provided" });
       }
 
+      if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        return res.status(503).json({ error: 'Inquiry submissions are temporarily unavailable. Please contact us directly.' });
+      }
+
       const inquiry = {
         user_id: user_id || null,
         full_name: full_name.trim(),
@@ -59,14 +63,16 @@ async function startServer() {
         created_at: new Date().toISOString(),
       };
 
-      if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-          auth: { persistSession: false, autoRefreshToken: false },
-        });
-        await supabase.from("project_requests").insert(inquiry);
+      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      const { error: insertError } = await supabase.from("project_requests").insert(inquiry);
+      if (insertError) {
+        console.error('Supabase inquiry insert failed:', insertError);
+        return res.status(500).json({ error: 'We could not save your inquiry right now.' });
       }
 
-      if (process.env.RESEND_API_KEY) {
+      if (resend && process.env.RESEND_API_KEY) {
         await resend.emails.send({
           from: "HARIKOS AI <onboarding@resend.dev>",
           to: [adminEmail],

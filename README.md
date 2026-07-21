@@ -16,7 +16,7 @@ A premium, production-ready landing page for Harikos AI—an AI Automation Studi
    ```bash
    npm install
    ```
-2. Create a local environment file
+2. Create a local environment file if you want to override defaults
    ```bash
    cp .env.example .env
    ```
@@ -24,6 +24,8 @@ A premium, production-ready landing page for Harikos AI—an AI Automation Studi
    ```bash
    npm run dev
    ```
+
+The app now runs locally at http://localhost:3000 without requiring Resend or Supabase credentials for basic startup. Optional mail and auth features will still work when those environment variables are provided.
 
 ## Deployment
 
@@ -47,7 +49,14 @@ This project is configured for Vercel.
    - `VITE_SUPABASE_ANON_KEY`
    - `SUPABASE_URL` (server-only; used by privileged API routes)
    - `SUPABASE_SERVICE_ROLE_KEY` (server-only; never prefix this with `VITE_`)
+   - `RESEND_API_KEY` (server-only; enables admin and visitor emails)
+   - `RESEND_FROM_EMAIL` (a verified Resend sender)
+   - `ADMIN_EMAIL` (the inbox that receives new inquiries)
 
 The browser only receives the two `VITE_` variables. Google OAuth sessions are persisted and refreshed by Supabase.
+
+### Project inquiries
+
+Run [`supabase/schema.sql`](./supabase/schema.sql) in the Supabase SQL editor before enabling the form. The form only reports success after the request is saved in `project_requests`; without server-side Supabase credentials it returns an honest temporary-unavailable error. Email notices are optional and require the Resend variables above.
 
 For full contact-form functionality, wire the form handlers to a real email provider or backend service.

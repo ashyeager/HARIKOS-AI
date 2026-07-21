@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Navbar from "./components/Navbar";
 import BackgroundEffects from "./components/BackgroundEffects";
 import ChatAssistant from "./components/ChatAssistant";
@@ -74,6 +76,9 @@ function AppContent() {
         {/* Persistent Floating AI Chat Assistant */}
         {!isPortalPage && <ChatAssistant />}
       </div>
+
+      <Analytics />
+      <SpeedInsights />
     </div>
   );
 }
