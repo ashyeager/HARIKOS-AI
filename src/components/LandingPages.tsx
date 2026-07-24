@@ -26,10 +26,10 @@ const features = [
 ];
 
 const featuredWork = {
-  title: "Red Chickz Oman",
+  title: "Red Chickz case study",
   description:
-    "A premium branded experience crafted to feel polished, modern, and conversion-ready.",
-  href: "https://diddy-s-meat.ai.studio",
+    "A flagship hospitality experience designed to feel elevated, cinematic, and conversion-minded from the first scroll.",
+  href: "/work/red-chickz",
 };
 
 export default function LandingPages() {
@@ -42,7 +42,7 @@ export default function LandingPages() {
   const y = useTransform(scrollYProgress, [0, 1], [50, -50]);
 
   return (
-    <section ref={containerRef} className="py-24 md:py-32 relative z-10 border-t border-brand-white/[0.04]">
+    <section id="work" ref={containerRef} className="py-24 md:py-32 relative z-10 border-t border-brand-white/[0.04]">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         
         {/* Header section */}
@@ -185,8 +185,8 @@ export default function LandingPages() {
 
             <motion.a
               href={featuredWork.href}
-              target="_blank"
-              rel="noopener noreferrer"
+              target={featuredWork.href.startsWith("http") ? "_blank" : undefined}
+              rel={featuredWork.href.startsWith("http") ? "noopener noreferrer" : undefined}
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -211,7 +211,7 @@ export default function LandingPages() {
                 </p>
                 <div className="mt-4 inline-flex items-center gap-2 text-sm text-brand-gray-300">
                   <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-                  {featuredWork.href.replace("https://", "")}
+                  {featuredWork.href.startsWith("http") ? featuredWork.href.replace("https://", "") : "View the full case study"}
                 </div>
               </div>
             </motion.a>

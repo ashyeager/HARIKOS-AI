@@ -106,8 +106,8 @@ export default function Footer() {
           <ul className="space-y-2.5">
             {[
               { label: "Why HARIKOS", href: "#why-harikos" },
+              { label: "Red Chickz Case Study", href: "/work/red-chickz" },
               { label: "Engineering Process", href: "#process" },
-              { label: "Our Vision", href: "#vision" },
               { label: "Inquire Capability", href: "#contact" }
             ].map((lnk) => (
               <li key={lnk.label}>

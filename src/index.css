@@ -19,6 +19,8 @@
   --color-brand-gray-800: #262626;
   --color-brand-gray-900: #171717;
   --color-brand-gray-950: #0a0a0a;
+  --color-noir-obsidian: #08080A;
+  --color-accent-gold: #E5A93C;
 }
 
 @layer base {

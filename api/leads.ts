@@ -15,12 +15,7 @@ export default async function handler(req: any, res: any) {
       return;
     }
 
-    res.status(200).json({
-      success: true,
-      leadId: `lead_${Date.now()}`,
-      message: 'Project inquiry received successfully.',
-      receivedAt: new Date().toISOString(),
-    });
+    res.status(410).json({ error: 'This endpoint is retired. Submit inquiries through /api/project-requests.' });
   } catch (error) {
     console.error('Lead API error:', error);
     res.status(500).json({ error: 'Failed to process project inquiry' });

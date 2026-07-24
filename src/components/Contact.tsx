@@ -95,7 +95,7 @@ export default function Contact() {
       }
 
       setIsSuccess(true);
-      setStatusMessage(payload.skipped ? 'Your inquiry was saved, but email delivery is currently pending configuration.' : 'Your inquiry was received and our team will follow up soon.');
+      setStatusMessage(payload.emailConfigured ? 'Your inquiry was received and our team will follow up soon.' : 'Your inquiry was saved. Email confirmation is not currently available.');
       setFormData(getInitialFormState(user));
       setValidationErrors({});
     } catch (error) {
@@ -319,4 +319,3 @@ export default function Contact() {
     </section>
   );
 }
-

@@ -64,6 +64,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    const supabase = getSupabaseAdminClient();
+    if (!supabase) {
+      res.status(503).json({ error: 'Inquiry submissions are temporarily unavailable. Please contact us directly.' });
+      return;
+    }
+
     const payload = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
     const { full_name, email, company, industry, service, budget, description, user_id } = payload;
 
@@ -85,16 +91,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       created_at: new Date().toISOString(),
     };
 
-    const supabase = getSupabaseAdminClient();
-    if (supabase) {
-      const { error } = await supabase.from('project_requests').insert(inquiry);
-      if (error) {
-        console.error('Supabase inquiry insert failed:', error);
-        res.status(500).json({ error: 'We could not save your inquiry right now.' });
-        return;
-      }
-    } else {
-      console.warn('Supabase credentials are not configured. Inquiry was not persisted to the database.');
+    const { error } = await supabase.from('project_requests').insert(inquiry);
+    if (error) {
+      console.error('Supabase inquiry insert failed:', error);
+      res.status(500).json({ error: 'We could not save your inquiry right now.' });
+      return;
     }
 
     const mailResults: Array<{ success: boolean; message: string }> = [];
@@ -133,7 +134,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(200).json({
       success: true,
       message: 'Project inquiry received successfully.',
-      skipped: !process.env.RESEND_API_KEY,
+      emailConfigured: Boolean(process.env.RESEND_API_KEY),
       mailResults,
     });
   } catch (error) {
