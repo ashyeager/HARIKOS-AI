@@ -28,7 +28,7 @@ const previewCards = [
   {
     badge: "INTERACTIVE DEMO",
     title: "Wok House / Premium Dining Demo",
-    subtitle: "Pan-Asian Street Food • Interactive Wok Builder & Live OMR Math",
+    subtitle: "Pan-Asian street food • Interactive wok builder & live OMR pricing",
     cta: "Launch Live Demo →",
     href: WOK_DEMO_URL,
     previewGradient:
