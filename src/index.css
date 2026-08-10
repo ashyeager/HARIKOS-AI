@@ -35,6 +35,18 @@
     overflow-x: hidden;
   }
 
+  .mesh-gradient {
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(229, 169, 60, 0.16), transparent 26%),
+      radial-gradient(circle at 80% 25%, rgba(56, 189, 248, 0.16), transparent 24%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+    filter: saturate(1.2);
+  }
+
+  .ambient-glow {
+    animation: driftGlow 12s ease-in-out infinite alternate;
+  }
+
   /* Custom scrollbar to match premium minimal theme */
   ::-webkit-scrollbar {
     width: 6px;
@@ -100,6 +112,20 @@
   50% {
     opacity: 0.25;
     transform: scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
   }
 }
 

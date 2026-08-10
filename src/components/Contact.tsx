@@ -1,319 +1,133 @@
-import React, { useEffect, useState } from 'react';
-import { Instagram, Send, Check } from 'lucide-react';
-import { useUserAuth } from '../contexts/UserAuthContext';
-import { Link } from 'react-router-dom';
+import { FormEvent, useState } from "react";
+import { ArrowRight, Check, Instagram, Mail } from "lucide-react";
 
-interface InquiryFormState {
-  fullName: string;
-  email: string;
-  company: string;
-  industry: string;
-  service: string;
-  budget: string;
-  projectDescription: string;
-}
-
-const getInitialFormState = (user: ReturnType<typeof useUserAuth>['user']) => ({
-  fullName: (user?.user_metadata?.full_name as string) || '',
-  email: user?.email || '',
-  company: '',
-  industry: '',
-  service: '',
-  budget: '',
-  projectDescription: '',
-});
+const initialForm = {
+  name: "",
+  email: "",
+  company: "",
+  industry: "",
+  interest: "",
+  message: "",
+};
 
 export default function Contact() {
-  const { user } = useUserAuth();
+  const [form, setForm] = useState(initialForm);
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [statusMessage, setStatusMessage] = useState("");
 
-  const [formData, setFormData] = useState<InquiryFormState>(() => getInitialFormState(user));
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [statusMessage, setStatusMessage] = useState('');
-
-  useEffect(() => {
-    setFormData((current) => ({
-      ...current,
-      fullName: (user?.user_metadata?.full_name as string) || current.fullName || '',
-      email: user?.email || current.email || '',
-    }));
-  }, [user]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((current) => ({ ...current, [name]: value }));
-    setValidationErrors((current) => ({ ...current, [name]: '' }));
-  };
-
-  const validateForm = () => {
-    const nextErrors: Record<string, string> = {};
-
-    if (!formData.fullName.trim()) nextErrors.fullName = 'Please enter your full name.';
-    if (!formData.email.trim()) nextErrors.email = 'Please enter your email address.';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) nextErrors.email = 'Please enter a valid email address.';
-    if (!formData.company.trim()) nextErrors.company = 'Please enter your company name.';
-    if (!formData.industry) nextErrors.industry = 'Please select an industry.';
-    if (!formData.service) nextErrors.service = 'Please select the service you need.';
-    if (!formData.projectDescription.trim()) nextErrors.projectDescription = 'Please describe your project briefly.';
-
-    setValidationErrors(nextErrors);
-    return nextErrors;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    setStatusMessage('');
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus("submitting");
+    setStatusMessage("");
 
     try {
-      const response = await fetch('/api/project-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/project-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          full_name: formData.fullName.trim(),
-          email: formData.email.trim(),
-          company: formData.company.trim(),
-          industry: formData.industry,
-          service: formData.service,
-          budget: formData.budget || null,
-          description: formData.projectDescription.trim(),
-          user_id: user?.id || null,
+          full_name: form.name.trim(),
+          email: form.email.trim(),
+          company: form.company.trim(),
+          industry: form.industry,
+          service: form.interest,
+          description: form.message.trim(),
         }),
       });
 
       const payload = await response.json().catch(() => ({}));
-
       if (!response.ok) {
-        throw new Error(payload.error || 'We could not submit your inquiry. Please try again.');
+        throw new Error(payload.error || "We couldn't submit your message right now.");
       }
 
-      setIsSuccess(true);
-      setStatusMessage(payload.emailConfigured ? 'Your inquiry was received and our team will follow up soon.' : 'Your inquiry was saved. Email confirmation is not currently available.');
-      setFormData(getInitialFormState(user));
-      setValidationErrors({});
+      setStatus("success");
+      setStatusMessage("Your message has been received. HARIKOS will follow up by email.");
+      setForm(initialForm);
     } catch (error) {
-      console.error('Error submitting inquiry:', error);
-      setStatusMessage(error instanceof Error ? error.message : 'We could not submit your inquiry right now.');
-    } finally {
-      setIsSubmitting(false);
+      setStatus("error");
+      setStatusMessage(error instanceof Error ? error.message : "We couldn't submit your message right now.");
     }
   };
 
+  const updateField = (field: keyof typeof initialForm, value: string) => {
+    setForm((current) => ({ ...current, [field]: value }));
+    if (status === "error") setStatus("idle");
+  };
+
   return (
-    <section id="contact" className="relative py-32 md:py-48 px-6 md:px-12 z-10 max-w-7xl mx-auto border-t border-brand-white/[0.05] overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[600px] md:h-[600px] rounded-full bg-cyan-900/[0.02] blur-[120px] pointer-events-none select-none" />
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 relative items-start">
-        <div className="lg:col-span-5 flex flex-col justify-center space-y-8 sticky top-32">
-          <div className="space-y-6">
-            <h2 className="font-display text-4xl sm:text-5xl md:text-6xl font-light tracking-tight text-brand-white leading-[1.1]">
-              Start a <br className="hidden lg:block" />
-              <span className="font-bold">Project.</span>
+    <section id="contact" className="relative z-10 border-t border-white/[0.06] px-6 py-20 md:px-12 md:py-28">
+      <div className="mx-auto max-w-7xl">
+        <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+          <div>
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#E5A93C]">Contact</span>
+            <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
+              Follow the build or start a project.
             </h2>
-            <p className="text-brand-gray-400 font-light text-lg leading-relaxed">
-              Tell us about your business and what you are looking to achieve. We will review your inquiry and follow up promptly.
+            <p className="mt-5 max-w-xl text-base leading-7 text-brand-gray-400">
+              Get updates on HARIKOS AI, talk to H Studio about a business need, or simply start a conversation with HARIKOS.
             </p>
-          </div>
 
-          <div className="pt-8 border-t border-brand-white/10 space-y-6">
-            <div>
-              <p className="text-sm font-medium text-brand-white mb-1">Prefer direct messaging?</p>
-              <p className="text-sm text-brand-gray-500 mb-4">The fastest way to reach us is through Instagram.</p>
-              <a
-                href="https://instagram.com/harikos.ai"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-brand-white font-medium hover:text-brand-gray-300 transition-colors group"
-              >
-                Message @harikos.ai
-                <Instagram className="w-4 h-4 group-hover:scale-110 transition-transform" />
+            <div className="mt-8 flex flex-col gap-4 text-sm text-brand-gray-400">
+              <a href="https://instagram.com/harikos.ai" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 transition hover:text-white">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03]"><Instagram className="h-4 w-4" /></span>
+                @harikos.ai
+              </a>
+              <a href="mailto:ashyeagerhq@gmail.com" className="inline-flex items-center gap-3 transition hover:text-white">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03]"><Mail className="h-4 w-4" /></span>
+                ashyeagerhq@gmail.com
               </a>
             </div>
           </div>
-        </div>
 
-        <div className="lg:col-span-7 relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-brand-white/[0.05] to-transparent rounded-3xl -m-px" />
-          <div className="relative bg-[#050505]/60 backdrop-blur-2xl border border-brand-white/[0.1] rounded-3xl p-8 md:p-12 shadow-2xl overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-900/[0.02] blur-3xl rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none" />
+          <form onSubmit={handleSubmit} className="rounded-[2rem] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.075),rgba(255,255,255,0.025))] p-6 shadow-[0_25px_80px_rgba(0,0,0,0.3)] sm:p-8">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="text-sm text-brand-gray-300">
+                <span className="mb-2 block text-xs uppercase tracking-[0.16em] text-brand-gray-500">Name</span>
+                <input required autoComplete="name" value={form.name} onChange={(event) => updateField("name", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-brand-gray-600 focus:border-[#E5A93C]" placeholder="Your name" />
+              </label>
+              <label className="text-sm text-brand-gray-300">
+                <span className="mb-2 block text-xs uppercase tracking-[0.16em] text-brand-gray-500">Email</span>
+                <input required type="email" autoComplete="email" value={form.email} onChange={(event) => updateField("email", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-brand-gray-600 focus:border-[#E5A93C]" placeholder="you@company.com" />
+              </label>
+              <label className="text-sm text-brand-gray-300">
+                <span className="mb-2 block text-xs uppercase tracking-[0.16em] text-brand-gray-500">Company / project</span>
+                <input required autoComplete="organization" value={form.company} onChange={(event) => updateField("company", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-brand-gray-600 focus:border-[#E5A93C]" placeholder="Company or project name" />
+              </label>
+              <label className="text-sm text-brand-gray-300">
+                <span className="mb-2 block text-xs uppercase tracking-[0.16em] text-brand-gray-500">Industry</span>
+                <select required value={form.industry} onChange={(event) => updateField("industry", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#0b0b0d] px-4 py-3 text-sm text-white outline-none transition focus:border-[#E5A93C]">
+                  <option value="" disabled>Select one</option>
+                  <option>Hospitality</option>
+                  <option>Retail / Ecommerce</option>
+                  <option>Professional Services</option>
+                  <option>Technology</option>
+                  <option>Other</option>
+                </select>
+              </label>
+            </div>
+            <label className="mt-4 block text-sm text-brand-gray-300">
+              <span className="mb-2 block text-xs uppercase tracking-[0.16em] text-brand-gray-500">I'm interested in</span>
+              <select required value={form.interest} onChange={(event) => updateField("interest", event.target.value)} className="w-full rounded-2xl border border-white/10 bg-[#0b0b0d] px-4 py-3 text-sm text-white outline-none transition focus:border-[#E5A93C]">
+                <option value="" disabled>Select one</option>
+                <option>HARIKOS AI updates</option>
+                <option>H Studio project</option>
+                <option>General HARIKOS inquiry</option>
+              </select>
+            </label>
+            <label className="mt-4 block text-sm text-brand-gray-300">
+              <span className="mb-2 block text-xs uppercase tracking-[0.16em] text-brand-gray-500">Message</span>
+              <textarea required value={form.message} onChange={(event) => updateField("message", event.target.value)} className="min-h-32 w-full resize-y rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-brand-gray-600 focus:border-[#E5A93C]" placeholder="What would you like to know or build?" />
+            </label>
 
-            {isSuccess ? (
-              <div className="flex flex-col items-center justify-center text-center py-16 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-6">
-                  <Check className="w-8 h-8" />
-                </div>
-                <h3 className="text-3xl font-display text-brand-white mb-2">Project inquiry received.</h3>
-                <p className="text-brand-gray-400 max-w-sm mx-auto text-lg mb-8">
-                  Thank you for contacting HARIKOS AI. We have received your inquiry and will review it shortly.
-                </p>
-                <p className="text-sm text-brand-gray-500">{statusMessage}</p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8 w-full">
-                  <a
-                    href="https://instagram.com/harikos.ai"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-8 py-3.5 bg-brand-white text-brand-black text-sm font-semibold tracking-wide rounded-xl hover:bg-brand-gray-300 transition-colors inline-flex items-center justify-center gap-2"
-                  >
-                    Visit Instagram @harikos.ai
-                  </a>
-                  <Link
-                    to="/"
-                    onClick={() => {
-                      setIsSuccess(false);
-                      setStatusMessage('');
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="px-8 py-3.5 bg-transparent border border-brand-white/20 text-brand-white text-sm font-medium rounded-xl hover:bg-brand-white/5 transition-colors inline-flex items-center justify-center gap-2"
-                  >
-                    Return Home
-                  </Link>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-xl font-medium text-brand-white border-b border-brand-white/10 pb-2 mb-4">Project Inquiry</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-brand-gray-500 uppercase tracking-widest pl-1">Full Name</label>
-                      <input
-                        type="text"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        className="w-full bg-brand-white/[0.02] border border-brand-white/[0.06] rounded-xl px-4 py-3.5 text-sm text-brand-white focus:outline-none focus:border-brand-white/30 focus:bg-brand-white/[0.04] transition-all"
-                      />
-                      {validationErrors.fullName && <p className="text-xs text-red-400">{validationErrors.fullName}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-brand-gray-500 uppercase tracking-widest pl-1">Email Address</label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="w-full bg-brand-white/[0.02] border border-brand-white/[0.06] rounded-xl px-4 py-3.5 text-sm text-brand-white focus:outline-none focus:border-brand-white/30 focus:bg-brand-white/[0.04] transition-all"
-                      />
-                      {validationErrors.email && <p className="text-xs text-red-400">{validationErrors.email}</p>}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-mono text-brand-gray-500 uppercase tracking-widest pl-1">Company Name</label>
-                    <input
-                      type="text"
-                      name="company"
-                      value={formData.company}
-                      onChange={handleChange}
-                      className="w-full bg-brand-white/[0.02] border border-brand-white/[0.06] rounded-xl px-4 py-3.5 text-sm text-brand-white focus:outline-none focus:border-brand-white/30 focus:bg-brand-white/[0.04] transition-all"
-                    />
-                    {validationErrors.company && <p className="text-xs text-red-400">{validationErrors.company}</p>}
-                  </div>
-                </div>
-
-                <div className="space-y-4 mt-8 pt-4">
-                  <h3 className="text-xl font-medium text-brand-white border-b border-brand-white/10 pb-2 mb-4">Project Details</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-brand-gray-500 uppercase tracking-widest pl-1">Industry</label>
-                      <select
-                        name="industry"
-                        value={formData.industry}
-                        onChange={handleChange}
-                        className="w-full bg-brand-white/[0.02] border border-brand-white/[0.06] rounded-xl px-4 py-3.5 text-sm text-brand-white focus:outline-none focus:border-brand-white/30 focus:bg-brand-white/[0.04] transition-all appearance-none"
-                      >
-                        <option value="" disabled className="bg-brand-black text-brand-gray-500">Select industry</option>
-                        <option value="Real Estate" className="bg-brand-black">Real Estate</option>
-                        <option value="Restaurant / Hospitality" className="bg-brand-black">Restaurant / Hospitality</option>
-                        <option value="Healthcare" className="bg-brand-black">Healthcare</option>
-                        <option value="Startup" className="bg-brand-black">Startup</option>
-                        <option value="Professional Services" className="bg-brand-black">Professional Services</option>
-                        <option value="Other" className="bg-brand-black">Other</option>
-                      </select>
-                      {validationErrors.industry && <p className="text-xs text-red-400">{validationErrors.industry}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-brand-gray-500 uppercase tracking-widest pl-1">Service Needed</label>
-                      <select
-                        name="service"
-                        value={formData.service}
-                        onChange={handleChange}
-                        className="w-full bg-brand-white/[0.02] border border-brand-white/[0.06] rounded-xl px-4 py-3.5 text-sm text-brand-white focus:outline-none focus:border-brand-white/30 focus:bg-brand-white/[0.04] transition-all appearance-none"
-                      >
-                        <option value="" disabled className="bg-brand-black text-brand-gray-500">Select a service</option>
-                        <option value="AI Automation Systems" className="bg-brand-black">AI Automation Systems</option>
-                        <option value="AI Chatbots & Voice Agents" className="bg-brand-black">AI Chatbots & Voice Agents</option>
-                        <option value="Premium Landing Page" className="bg-brand-black">Premium Landing Page</option>
-                        <option value="Premium Website" className="bg-brand-black">Premium Website</option>
-                        <option value="Custom Digital Experience" className="bg-brand-black">Custom Digital Experience</option>
-                      </select>
-                      {validationErrors.service && <p className="text-xs text-red-400">{validationErrors.service}</p>}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-mono text-brand-gray-500 uppercase tracking-widest pl-1">Budget</label>
-                      <select
-                        name="budget"
-                        value={formData.budget}
-                        onChange={handleChange}
-                        className="w-full bg-brand-white/[0.02] border border-brand-white/[0.06] rounded-xl px-4 py-3.5 text-sm text-brand-white focus:outline-none focus:border-brand-white/30 focus:bg-brand-white/[0.04] transition-all appearance-none"
-                      >
-                        <option value="" className="bg-brand-black text-brand-gray-500">Select budget (optional)</option>
-                        <option value="Under $500" className="bg-brand-black">Under $500</option>
-                        <option value="$500–$2,000" className="bg-brand-black">$500–$2,000</option>
-                        <option value="$2,000+" className="bg-brand-black">$2,000+</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 pt-2">
-                    <label className="text-[10px] font-mono text-brand-gray-500 uppercase tracking-widest pl-1">Project Description</label>
-                    <textarea
-                      name="projectDescription"
-                      rows={5}
-                      placeholder="Tell us about your business, challenges, and goals."
-                      value={formData.projectDescription}
-                      onChange={handleChange}
-                      className="w-full bg-brand-white/[0.02] border border-brand-white/[0.06] rounded-xl px-4 py-3.5 text-sm text-brand-white focus:outline-none focus:border-brand-white/30 focus:bg-brand-white/[0.04] transition-all resize-none placeholder-brand-gray-600"
-                    />
-                    {validationErrors.projectDescription && <p className="text-xs text-red-400">{validationErrors.projectDescription}</p>}
-                  </div>
-                </div>
-
-                {statusMessage && <p className="text-sm text-brand-gray-400">{statusMessage}</p>}
-
-                <div className="pt-4">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-4 bg-brand-white text-brand-black font-semibold tracking-wide rounded-xl hover:bg-brand-gray-300 transition-colors flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? (
-                      <div className="w-5 h-5 border-2 border-brand-black/30 border-t-brand-black rounded-full animate-spin"></div>
-                    ) : (
-                      <>
-                        <span>Submit Project Inquiry</span>
-                        <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </>
-                    )}
-                  </button>
-                  {user && (
-                    <p className="text-center text-xs text-brand-gray-500 mt-4">
-                      This inquiry will be attached to your account ({user.email}).
-                    </p>
-                  )}
-                </div>
-              </form>
-            )}
-          </div>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button disabled={status === "submitting"} type="submit" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#E5A93C] px-6 py-3 text-sm font-bold text-[#130d04] transition hover:bg-[#F2C66D] disabled:cursor-wait disabled:opacity-60">
+                {status === "submitting" ? "Sending..." : status === "success" ? "Message received" : "Send message"}
+                {status === "success" ? <Check className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+              </button>
+              <p aria-live="polite" className={`max-w-sm text-xs leading-5 ${status === "error" ? "text-red-300" : status === "success" ? "text-emerald-300" : "text-brand-gray-500"}`}>
+                {statusMessage || "No spam. Just a direct reply from HARIKOS."}
+              </p>
+            </div>
+          </form>
         </div>
       </div>
     </section>

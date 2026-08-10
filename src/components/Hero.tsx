@@ -1,215 +1,75 @@
+import { lazy, Suspense } from "react";
 import { motion } from "motion/react";
-import { ArrowRight } from "lucide-react";
-import MagneticButton from "./MagneticButton";
+import { ArrowRight, Boxes } from "lucide-react";
 
-interface HeroProps {
-  onBookCallClick: () => void;
-}
+const PremiumScene = lazy(() => import("./PremiumScene"));
 
-const RED_CHICKZ_LIVE_URL = "https://premium-restraunt.vercel.app/";
-const WOK_DEMO_URL =
-  "https://premium-restraunt-idkvogghi-ashyeager-2658s-projects.vercel.app/";
-const WHATSAPP_STRATEGY_URL =
-  "https://wa.me/96895703688?text=Hi%20HARIKOS%20AI%2C%20I%27d%20like%20to%20book%20a%2015-min%20strategy%20call.";
-
-const previewCards = [
-  {
-    badge: "LIVE CASE STUDY",
-    title: "The Red Chickz",
-    subtitle: "Nashville Hot Chicken • Direct Order & Menu Engine",
-    cta: "Launch Live Experience →",
-    href: RED_CHICKZ_LIVE_URL,
-    previewGradient:
-      "from-[#1a0a0a] via-[#120808] to-[#08080A] ring-[rgba(229,169,60,0.12)] hover:ring-[rgba(229,169,60,0.35)]",
-    accent: "text-[#E5A93C]",
-    badgeTone: "border-[#E5A93C]/25 bg-[#E5A93C]/10 text-[#E5A93C]",
-    previewHint: "red-chickz",
-  },
-  {
-    badge: "INTERACTIVE DEMO",
-    title: "Wok House / Premium Dining Demo",
-    subtitle: "Pan-Asian street food • Interactive wok builder & live OMR pricing",
-    cta: "Launch Live Demo →",
-    href: WOK_DEMO_URL,
-    previewGradient:
-      "from-[#0a1210] via-[#0c1014] to-[#08080A] ring-white/[0.06] hover:ring-[rgba(229,169,60,0.28)]",
-    accent: "text-[#E5A93C]",
-    badgeTone: "border-white/10 bg-white/[0.06] text-brand-gray-300",
-    previewHint: "wok-house",
-  },
-] as const;
-
-function PreviewPlaceholder({ variant }: { variant: "red-chickz" | "wok-house" }) {
-  const isRed = variant === "red-chickz";
-
+function SceneFallback() {
   return (
-    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-t-2xl bg-[#0c0c0f]">
-      <div
-        className={`absolute inset-0 bg-gradient-to-br ${
-          isRed
-            ? "from-[#3d1515]/40 via-[#08080A] to-[#08080A]"
-            : "from-[#14332a]/35 via-[#08080A] to-[#08080A]"
-        }`}
-      />
-      <div className="absolute inset-0 opacity-[0.35] noise-bg mix-blend-overlay pointer-events-none" />
-      {/* SaaS-style mock chrome */}
-      <div className="absolute inset-x-0 top-0 flex items-center gap-1.5 border-b border-white/[0.06] bg-[rgba(8,8,10,0.85)] px-3 py-2.5">
-        <span className="h-2 w-2 rounded-full bg-white/15" />
-        <span className="h-2 w-2 rounded-full bg-white/10" />
-        <span className="h-2 w-2 rounded-full bg-white/10" />
-        <span className="ml-2 h-4 flex-1 max-w-[140px] rounded-md bg-white/[0.06]" />
-      </div>
-      <div className="absolute inset-0 top-9 p-4 sm:p-5">
-        <div className="grid h-full grid-cols-12 gap-2 opacity-80">
-          <div className="col-span-4 space-y-2">
-            <div className={`h-2 w-3/4 rounded ${isRed ? "bg-[#E5A93C]/30" : "bg-emerald-500/25"}`} />
-            <div className="h-16 rounded-lg border border-white/[0.06] bg-white/[0.03]" />
-            <div className="h-10 rounded-lg border border-white/[0.06] bg-white/[0.02]" />
-            <div className="h-10 rounded-lg border border-white/[0.06] bg-white/[0.02]" />
-          </div>
-          <div className="col-span-8 space-y-2">
-            <div className="h-24 rounded-xl border border-white/[0.08] bg-gradient-to-br from-white/[0.06] to-transparent" />
-            <div className="grid grid-cols-3 gap-2">
-              <div className="h-14 rounded-lg bg-white/[0.04]" />
-              <div className="h-14 rounded-lg bg-white/[0.04]" />
-              <div className="h-14 rounded-lg bg-white/[0.04]" />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="absolute inset-0 bg-gradient-to-t from-[#08080A] via-[#08080A]/70 to-transparent pointer-events-none" />
+    <div className="relative h-[360px] w-full overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_center,rgba(229,169,60,0.28),transparent_25%),radial-gradient(circle_at_bottom_right,rgba(56,189,248,0.18),transparent_38%),#07070a] shadow-[0_30px_100px_rgba(0,0,0,0.45)] sm:h-[430px]" aria-hidden>
+      <div className="absolute left-1/2 top-1/2 h-36 w-36 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#F2C66D]/40 bg-[#E5A93C]/20 shadow-[0_0_80px_rgba(229,169,60,0.25)]" />
+      <div className="absolute left-1/2 top-1/2 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full border border-sky-300/25" />
     </div>
   );
 }
 
-function DemoPreviewCard({
-  card,
-  index,
-}: {
-  card: (typeof previewCards)[number];
-  index: number;
-}) {
+export default function Hero() {
   return (
-    <motion.a
-      href={card.href}
-      target="_blank"
-      rel="noopener noreferrer"
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, delay: 0.35 + index * 0.12, ease: [0.16, 1, 0.3, 1] }}
-      className={`group flex flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[rgba(18,18,22,0.6)] backdrop-blur-[16px] shadow-[0_24px_80px_rgba(0,0,0,0.45)] ring-1 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_28px_90px_rgba(0,0,0,0.55)] ${card.previewGradient}`}
-    >
-      <PreviewPlaceholder variant={card.previewHint} />
+    <section id="hero" className="relative overflow-hidden px-5 pb-16 pt-28 sm:px-6 md:px-12 md:pb-24 md:pt-36">
+      <div className="absolute inset-0 -z-10 bg-[#07070a]" aria-hidden />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_55%_at_15%_20%,rgba(229,169,60,0.16),transparent_60%),radial-gradient(ellipse_45%_35%_at_90%_70%,rgba(56,189,248,0.1),transparent_65%)]" aria-hidden />
+      <div className="ambient-glow absolute left-[-10%] top-[-12%] h-72 w-72 rounded-full bg-[#E5A93C]/30 blur-[140px]" aria-hidden />
+      <div className="ambient-glow absolute bottom-[-4%] right-[-6%] h-80 w-80 rounded-full bg-sky-400/20 blur-[150px]" aria-hidden />
+      <div className="absolute left-[6%] top-[16%] h-24 w-24 rounded-full border border-[#E5A93C]/20 bg-[#E5A93C]/10 blur-[70px]" aria-hidden />
+      <div className="absolute right-[10%] top-[24%] h-32 w-32 rounded-full border border-sky-400/20 bg-sky-400/10 blur-[85px]" aria-hidden />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(120deg,rgba(255,255,255,0.04)_0%,transparent_38%,transparent_62%,rgba(255,255,255,0.025)_100%)]" aria-hidden />
 
-      <div className="relative flex flex-1 flex-col p-5 sm:p-6">
-        <span
-          className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] ${card.badgeTone}`}
-        >
-          {card.badge}
-        </span>
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
+        <div className="text-center lg:text-left">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }} className="inline-flex items-center gap-2 rounded-full border border-[#E5A93C]/25 bg-[#E5A93C]/10 px-4 py-2">
+            <Boxes className="h-3.5 w-3.5 text-[#F2C66D]" />
+            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#F2C66D]">Independent technology company</span>
+          </motion.div>
 
-        <h3 className="mt-4 font-display text-xl sm:text-2xl font-semibold tracking-tight text-brand-white">
-          {card.title}
-        </h3>
-        <p className="mt-2 text-sm leading-relaxed text-brand-gray-400">{card.subtitle}</p>
+          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.08, ease: [0.16, 1, 0.3, 1] }} className="mt-7 max-w-4xl font-display text-5xl font-bold leading-[0.94] tracking-[-0.05em] text-brand-white sm:text-6xl md:text-7xl lg:text-[5.35rem]">
+            Building software for what's next.
+          </motion.h1>
 
-        <span
-          className={`mt-6 inline-flex min-h-12 items-center gap-2 text-sm font-medium transition-colors group-hover:gap-3 ${card.accent}`}
-        >
-          {card.cta}
-          <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-        </span>
-      </div>
-    </motion.a>
-  );
-}
+          <motion.p initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65, delay: 0.16 }} className="mx-auto mt-6 max-w-xl text-base font-light leading-7 text-brand-gray-300 sm:text-lg lg:mx-0">
+            We build focused AI products, digital systems, and tools designed around real problems.
+          </motion.p>
 
-export default function Hero({ onBookCallClick }: HeroProps) {
-  return (
-    <section
-      id="hero"
-      className="relative min-h-screen pt-28 pb-16 md:pt-36 md:pb-24 flex flex-col items-center px-5 sm:px-6 md:px-12 z-10 overflow-hidden"
-    >
-      {/* Hero-local noir backdrop */}
-      <div
-        className="absolute inset-0 -z-10 bg-[#08080A]"
-        aria-hidden
-      />
-      <div
-        className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(229,169,60,0.07),transparent_55%),radial-gradient(ellipse_60%_40%_at_100%_50%,rgba(255,255,255,0.03),transparent_50%)]"
-        aria-hidden
-      />
-      <div className="absolute inset-0 -z-10 noise-bg opacity-[0.45] mix-blend-overlay pointer-events-none" aria-hidden />
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65, delay: 0.24 }} className="mt-8 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start">
+            <a href="#products" className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#E5A93C] px-7 py-3.5 text-sm font-bold text-[#130d04] transition hover:-translate-y-0.5 hover:bg-[#F2C66D]">
+              Explore What We're Building
+              <ArrowRight className="h-4 w-4" />
+            </a>
+            <a href="#h-studio" className="inline-flex min-h-14 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] px-7 py-3.5 text-sm font-semibold text-brand-white transition hover:border-white/25 hover:bg-white/[0.08]">
+              H Studio
+            </a>
+          </motion.div>
 
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.34 }} className="mt-7 flex flex-wrap justify-center gap-x-6 gap-y-3 text-xs text-brand-gray-400 lg:justify-start">
+            {['Products', 'Digital systems', 'Technical experiments'].map((item) => (
+              <span key={item} className="inline-flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#E5A93C]" />
+                {item}
+              </span>
+            ))}
+          </motion.div>
+        </div>
 
-      <div className="w-full max-w-6xl mx-auto flex flex-col items-center text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.05 }}
-          className="inline-flex items-center gap-2.5 rounded-full border border-white/[0.08] bg-[rgba(18,18,22,0.6)] px-4 py-2 backdrop-blur-[16px]"
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(52,211,153,0.65)]" />
-          </span>
-          <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.12em] text-brand-gray-300">
-            HARIKOS AI • DIGITAL EXPERIENCE STUDIO
-          </span>
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
-          className="mt-8 max-w-4xl font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-brand-white leading-[1.06]"
-        >
-          ELEVATE YOUR DINING EXPERIENCE.
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-          className="mt-6 max-w-3xl text-base sm:text-lg text-brand-gray-400 font-light leading-relaxed"
-        >
-          We transform local restaurant menus into high-converting, 1-tap WhatsApp ordering engines.
-          Zero friction for your guests, direct pre-orders for your counter staff, and zero monthly
-          agency retainers.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.28 }}
-          className="mt-12 md:mt-14 w-full grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 text-left"
-        >
-          {previewCards.map((card, index) => (
-            <DemoPreviewCard key={card.title} card={card} index={index} />
-          ))}
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.55 }}
-          className="mt-10 md:mt-12 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full max-w-md sm:max-w-none justify-center"
-        >
-          <a
-            href={WHATSAPP_STRATEGY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#E5A93C]/35 bg-[#E5A93C]/10 px-8 py-3 text-sm font-medium text-[#E5A93C] transition-all duration-300 hover:border-[#E5A93C]/55 hover:bg-[#E5A93C]/15 hover:shadow-[0_0_24px_rgba(229,169,60,0.12)]"
-          >
-            Book a 15-Min Strategy Call
-          </a>
-          <MagneticButton
-            onClick={onBookCallClick}
-            className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/[0.08] bg-[rgba(18,18,22,0.6)] px-8 py-3 text-sm font-medium text-brand-gray-200 backdrop-blur-[16px] transition-all duration-300 hover:border-white/15 hover:text-brand-white cursor-pointer"
-          >
-            Send a Project Brief
-          </MagneticButton>
+        <motion.div initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.8, delay: 0.18, ease: [0.16, 1, 0.3, 1] }} className="w-full">
+          <div className="relative mx-auto max-w-[560px]">
+            <div className="absolute -inset-6 rounded-full bg-[#E5A93C]/10 blur-3xl" />
+            <Suspense fallback={<SceneFallback />}>
+              <PremiumScene />
+            </Suspense>
+            <div className="absolute bottom-4 left-4 right-4 rounded-[1.2rem] border border-white/10 bg-black/45 px-4 py-3 backdrop-blur-xl sm:bottom-6 sm:left-6 sm:right-6 sm:px-5">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-[#F2C66D]">HARIKOS / Building now</p>
+              <p className="mt-1 text-sm text-brand-gray-200">Focused products, thoughtful interfaces, and useful systems.</p>
+            </div>
+          </div>
         </motion.div>
       </div>
     </section>

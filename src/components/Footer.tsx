@@ -1,142 +1,69 @@
-import React from "react";
-import { Terminal, Mail, Linkedin, Instagram, Twitter } from "lucide-react";
+import { Instagram, Mail, Terminal } from "lucide-react";
+
+const links = [
+  { label: "Products", href: "#products" },
+  { label: "H Studio", href: "#h-studio" },
+  { label: "About", href: "#about" },
+  { label: "Contact", href: "#contact" },
+];
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
-
-  const handleLogoClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleScrollToId = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault();
-    const element = document.querySelector(id);
-    if (element) {
-      const offset = 80;
-      const bodyRect = document.body.getBoundingClientRect().top;
-      const elementRect = element.getBoundingClientRect().top;
-      const elementPosition = elementRect - bodyRect;
-      const offsetPosition = elementPosition - offset;
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
-    }
-  };
-
   return (
-    <footer className="relative bg-brand-black border-t border-brand-white/[0.05] z-10 py-16 md:py-24 overflow-hidden">
-      
-      {/* Light accent glow line */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[1px] bg-gradient-to-r from-transparent via-brand-white/10 to-transparent" />
-
-      <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-start">
-        
-        {/* Left branding */}
-        <div className="md:col-span-5 space-y-6">
-          <a href="#" onClick={handleLogoClick} className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-brand-white flex items-center justify-center transition-transform group-hover:rotate-6">
-              <Terminal className="w-4 h-4 text-brand-black" />
+    <footer className="relative z-10 border-t border-white/[0.06] bg-[#070708] px-6 py-12 md:px-12">
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white">
+              <Terminal className="h-4 w-4 text-black" />
             </div>
-            <span className="font-display font-bold tracking-widest text-lg text-brand-white">
-              HARIKOS
-            </span>
-          </a>
-          <p className="font-sans text-sm text-brand-gray-400 font-light max-w-sm leading-relaxed">
-            Premium Web & AI Automation Studio. We build immersive 3D landing pages and custom AI workflow systems for high-performance enterprises.
-          </p>
-          
-          <div className="flex items-center gap-3.5 pt-2">
-            {[
-              { icon: Mail, href: "mailto:ashyeagerhq@gmail.com", label: "Email" },
-              { icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" },
-              { icon: Instagram, href: "https://instagram.com/harikos.ai", label: "Instagram" },
-              { icon: Twitter, href: "https://x.com/harikos.ai", label: "X / Twitter" }
-            ].map((social, idx) => {
-              const Icon = social.icon;
-              return (
-                <a
-                  key={idx}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-lg border border-brand-white/[0.04] bg-brand-white/[0.02] text-brand-gray-400 hover:text-brand-white hover:border-brand-white/15 transition-all"
-                  aria-label={social.label}
-                >
-                  <Icon className="w-4 h-4" />
-                </a>
-              );
-            })}
+            <span className="font-display text-lg font-bold tracking-[0.16em] text-white">HARIKOS</span>
           </div>
+          <p className="mt-3 max-w-md text-sm leading-6 text-brand-gray-500">
+            A technology company building focused software, AI products, and digital systems.
+          </p>
         </div>
 
-        {/* Middle Column: Capabilities */}
-        <div className="col-span-6 md:col-span-3 space-y-4">
-          <h4 className="font-mono text-[10px] text-brand-gray-500 uppercase tracking-widest">
-            CAPABILITIES
-          </h4>
-          <ul className="space-y-2.5">
-            {[
-              "Premium Landing Pages",
-              "AI Agents",
-              "Workflow Automation",
-              "Customer Support AI",
-              "Lead Qualification",
-              "Internal AI Systems"
-            ].map((srv) => (
-              <li key={srv}>
-                <a
-                  href="#services"
-                  onClick={(e) => handleScrollToId(e, "#services")}
-                  className="text-xs text-brand-gray-400 hover:text-brand-white font-light transition-colors"
-                >
-                  {srv}
-                </a>
-              </li>
-            ))}
-          </ul>
+        <div className="flex flex-wrap gap-4 text-sm text-brand-gray-400">
+          {links.map((link) => (
+            <a key={link.label} href={link.href} className="transition hover:text-white">
+              {link.label}
+            </a>
+          ))}
         </div>
 
-        {/* Right Column: Studio */}
-        <div className="col-span-6 md:col-span-4 space-y-4">
-          <h4 className="font-mono text-[10px] text-brand-gray-500 uppercase tracking-widest">
-            STUDIO
-          </h4>
-          <ul className="space-y-2.5">
-            {[
-              { label: "Why HARIKOS", href: "#why-harikos" },
-              { label: "Red Chickz Case Study", href: "/work/red-chickz" },
-              { label: "Engineering Process", href: "#process" },
-              { label: "Inquire Capability", href: "#contact" }
-            ].map((lnk) => (
-              <li key={lnk.label}>
-                <a
-                  href={lnk.href}
-                  onClick={(e) => handleScrollToId(e, lnk.href)}
-                  className="text-xs text-brand-gray-400 hover:text-brand-white font-light transition-colors"
-                >
-                  {lnk.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-      </div>
-
-      {/* Sub-footer */}
-      <div className="max-w-7xl mx-auto px-6 md:px-12 mt-16 pt-8 border-t border-brand-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-brand-gray-500">
-        <p className="font-sans">
-          © {currentYear} HARIKOS
-        </p>
-        <div className="flex gap-6">
-          <a href="#" className="hover:text-brand-white transition-colors">Privacy Policy</a>
-          <a href="#" className="hover:text-brand-white transition-colors">Terms of Service</a>
-          <a href="#" className="hover:text-brand-white transition-colors">Security Compliance</a>
+        <div className="flex items-center gap-3">
+          <a
+            href="https://instagram.com/harikos.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="HARIKOS on Instagram"
+            className="rounded-xl border border-white/8 bg-white/[0.03] p-3 text-brand-gray-400 transition hover:text-white"
+          >
+            <Instagram className="h-4 w-4" />
+          </a>
+          <a
+            href="mailto:ashyeagerhq@gmail.com"
+            aria-label="Email HARIKOS"
+            className="rounded-xl border border-white/8 bg-white/[0.03] p-3 text-brand-gray-400 transition hover:text-white"
+          >
+            <Mail className="h-4 w-4" />
+          </a>
         </div>
       </div>
 
+      <div className="mx-auto mt-10 flex max-w-7xl flex-col gap-2 border-t border-white/[0.05] pt-6 text-xs text-brand-gray-600 sm:flex-row sm:items-center sm:justify-between">
+        <p>© {new Date().getFullYear()} HARIKOS</p>
+        <div className="flex flex-wrap gap-4">
+          <span>HARIKOS AI · In development</span>
+          <span>H Studio · Services</span>
+          <a href="https://instagram.com/harikos.ai" className="transition hover:text-brand-gray-300">
+            Instagram: @harikos.ai
+          </a>
+          <a href="mailto:ashyeagerhq@gmail.com" className="transition hover:text-brand-gray-300">
+            ashyeagerhq@gmail.com
+          </a>
+        </div>
+      </div>
     </footer>
   );
 }

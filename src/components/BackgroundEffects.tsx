@@ -1,40 +1,15 @@
-import { useEffect, useState } from "react";
-import BackgroundMesh from "./BackgroundMesh";
-
 export default function BackgroundEffects() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none select-none bg-[#050505]">
-      {/* 1. Living Mesh Simulation */}
-      <BackgroundMesh />
-      
-      {/* Grid Overlay for structure */}
-      <style>{`
-        .custom-grid-overlay {
-          background-size: 24px 24px !important;
-          opacity: 0.10 !important;
-        }
-        @media (min-width: 768px) {
-          .custom-grid-overlay {
-            background-size: 40px 40px !important;
-            opacity: 0.15 !important;
-          }
-        }
-      `}</style>
-      <div className="absolute inset-0 grid-bg custom-grid-overlay pointer-events-none" style={{ transform: 'translateZ(0)' }} />
-      
-      {/* 2. Fine Grain Noise Texture */}
-      <div className="absolute inset-0 noise-bg mix-blend-overlay opacity-15 md:opacity-20" />
-      
-      {/* 3. Subtle edge vignette */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(5,5,5,0.7)_100%)]" />
+    <div className="pointer-events-none fixed inset-0 z-0 select-none overflow-hidden bg-[#07070a]">
+      <div className="mesh-gradient absolute inset-0 opacity-90" />
+      <div className="ambient-glow absolute left-[-12%] top-[-10%] h-[28rem] w-[28rem] rounded-full bg-[#E5A93C]/25 blur-[160px]" />
+      <div className="ambient-glow absolute bottom-[-12%] right-[-8%] h-[24rem] w-[24rem] rounded-full bg-sky-400/18 blur-[170px]" />
+      <div className="absolute left-[22%] top-[16%] h-40 w-40 rounded-full border border-white/10 bg-white/[0.03] blur-[80px]" />
+      <div className="absolute bottom-[18%] left-[12%] h-28 w-28 rounded-full border border-[#E5A93C]/20 bg-[#E5A93C]/10 blur-[70px]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(229,169,60,0.08),transparent_28%),radial-gradient(circle_at_85%_70%,rgba(56,189,248,0.06),transparent_30%)]" />
+      <div className="grid-bg absolute inset-0 opacity-[0.12]" />
+      <div className="noise-bg absolute inset-0 opacity-30 mix-blend-overlay" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_38%,rgba(5,5,5,0.72)_100%)]" />
     </div>
   );
 }

@@ -18,7 +18,6 @@ export default defineConfig(() => {
             'react-vendor': ['react', 'react-dom'],
             'lucide': ['lucide-react'],
             'motion': ['motion'],
-            'three': ['three', '@react-three/fiber', '@react-three/drei'],
           },
         },
       },
