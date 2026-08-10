@@ -1,4 +1,4 @@
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, LoaderCircle } from "lucide-react";
 import { type FormEvent, useState } from "react";
 
 const topics = {
@@ -21,7 +21,10 @@ export default function ContactForm({ initialTopic }: ContactFormProps) {
 
   const update = (field: keyof typeof form, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
-    if (status === "error") setStatus("idle");
+    if (status !== "idle" && status !== "submitting") {
+      setStatus("idle");
+      setStatusMessage("");
+    }
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -29,10 +32,14 @@ export default function ContactForm({ initialTopic }: ContactFormProps) {
     setStatus("submitting");
     setStatusMessage("");
 
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 12_000);
+
     try {
       const response = await fetch("/api/project-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           full_name: form.name.trim(),
           email: form.email.trim(),
@@ -50,12 +57,16 @@ export default function ContactForm({ initialTopic }: ContactFormProps) {
       setForm((current) => ({ ...current, name: "", email: "", company: "", message: "" }));
     } catch (error) {
       setStatus("error");
-      setStatusMessage(error instanceof Error ? error.message : "The message could not be sent right now.");
+      setStatusMessage(error instanceof DOMException && error.name === "AbortError"
+        ? "The request timed out. Please try again."
+        : error instanceof Error ? error.message : "The message could not be sent right now.");
+    } finally {
+      window.clearTimeout(timeout);
     }
   };
 
   return (
-    <form className="contact-form" onSubmit={submit}>
+    <form className="contact-form" onSubmit={submit} aria-busy={status === "submitting"}>
       <fieldset>
         <legend>What is this about?</legend>
         <div className="topic-options">
@@ -90,12 +101,13 @@ export default function ContactForm({ initialTopic }: ContactFormProps) {
       </label>
       <label>
         <span>Message</span>
-        <textarea required value={form.message} onChange={(event) => update("message", event.target.value)} placeholder="What would you like to build, follow, or discuss?" />
+        <textarea required maxLength={1200} value={form.message} onChange={(event) => update("message", event.target.value)} placeholder="What would you like to build, follow, or discuss?" />
+        <small className="form-counter">{form.message.length} / 1200</small>
       </label>
       <div className="form-actions">
         <button className="button button--primary" type="submit" disabled={status === "submitting" || status === "success"}>
           {status === "submitting" ? "Sending…" : status === "success" ? "Message received" : "Send message"}
-          {status === "success" ? <Check aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
+          {status === "submitting" ? <LoaderCircle className="is-spinning" aria-hidden="true" /> : status === "success" ? <Check aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
         </button>
         <p aria-live="polite" className={status === "error" ? "is-error" : status === "success" ? "is-success" : ""}>
           {statusMessage || "A direct reply from HARIKOS. No automated sales sequence."}

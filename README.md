@@ -37,4 +37,12 @@ The site runs at `http://localhost:3000`. Browsing does not require environment 
 npm run check
 ```
 
-The production deployment is configured through `vercel.json`. The serverless inquiry endpoint is `/api/project-requests`.
+## Interaction architecture
+
+- `ExperienceLayer` owns global scroll progress, route feedback, pointer ambience, and quick actions.
+- `PageSkeleton` is the shared fallback for route-level code splitting.
+- `CoreStage` owns lazy loading, visibility detection, reduced-motion behavior, and the lightweight Core fallback.
+- `HarikosCore` contains only the Three.js scene and its frame-rate-independent animation.
+- `experience.css` keeps interaction polish separate from the established visual system in `index.css`.
+
+The production deployment supports the existing Sites project through `.openai/hosting.json` and the Vercel configuration in `vercel.json`. The serverless inquiry endpoint is `/api/project-requests`.

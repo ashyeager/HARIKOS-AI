@@ -21,10 +21,21 @@ export default function SiteHeader() {
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      const next = window.scrollY > 24;
+      setScrolled((current) => current === next ? current : next);
+    };
+    const onScroll = () => {
+      if (frame === 0) frame = window.requestAnimationFrame(measure);
+    };
+    measure();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   useEffect(() => setOpen(false), [location.pathname]);

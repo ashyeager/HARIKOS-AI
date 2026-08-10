@@ -1,5 +1,5 @@
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
 export type CoreVariant = "complete" | "opened" | "deconstructed" | "structured";
@@ -7,6 +7,7 @@ export type CoreVariant = "complete" | "opened" | "deconstructed" | "structured"
 type CoreMachineProps = {
   variant: CoreVariant;
   reducedMotion: boolean;
+  active: boolean;
 };
 
 const variantSettings = {
@@ -125,30 +126,53 @@ function InnerEngine({ scale }: { scale: number }) {
   );
 }
 
-function CoreMachine({ variant, reducedMotion }: CoreMachineProps) {
+function CoreMachine({ variant, reducedMotion, active }: CoreMachineProps) {
   const assemblyRef = useRef<THREE.Group>(null);
   const cageRef = useRef<THREE.Group>(null);
   const innerRef = useRef<THREE.Group>(null);
+  const scrollProgressRef = useRef(0);
   const settings = variantSettings[variant];
 
-  useFrame((state) => {
-    if (!assemblyRef.current || !cageRef.current || !innerRef.current || reducedMotion) return;
+  useEffect(() => {
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      const available = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+      scrollProgressRef.current = THREE.MathUtils.clamp(window.scrollY / available, 0, 1);
+    };
+    const scheduleMeasure = () => {
+      if (frame === 0) frame = window.requestAnimationFrame(measure);
+    };
+
+    measure();
+    window.addEventListener("scroll", scheduleMeasure, { passive: true });
+    window.addEventListener("resize", scheduleMeasure, { passive: true });
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", scheduleMeasure);
+      window.removeEventListener("resize", scheduleMeasure);
+    };
+  }, []);
+
+  useFrame((state, delta) => {
+    if (!assemblyRef.current || !cageRef.current || !innerRef.current || reducedMotion || !active) return;
     const time = state.clock.elapsedTime;
-    const scroll = typeof window === "undefined" ? 0 : window.scrollY / Math.max(document.body.scrollHeight, 1);
+    const smoothing = 1 - Math.exp(-Math.min(delta, 0.05) * 4.6);
     assemblyRef.current.rotation.y = THREE.MathUtils.lerp(
       assemblyRef.current.rotation.y,
-      state.pointer.x * 0.24 + time * 0.07 + scroll * 0.72,
-      0.035,
+      state.pointer.x * 0.24 + scrollProgressRef.current * 0.72,
+      smoothing,
     );
     assemblyRef.current.rotation.x = THREE.MathUtils.lerp(
       assemblyRef.current.rotation.x,
       state.pointer.y * -0.16 + Math.sin(time * 0.3) * 0.055,
-      0.035,
+      smoothing,
     );
-    cageRef.current.rotation.z = time * 0.045 + Math.sin(time * 0.22) * 0.035;
+    assemblyRef.current.position.y = Math.sin(time * 0.42) * 0.035;
+    cageRef.current.rotation.z += delta * 0.045;
     cageRef.current.rotation.x = Math.sin(time * 0.17) * 0.04;
-    innerRef.current.rotation.y = -time * 0.22;
-    innerRef.current.rotation.z = time * 0.11;
+    innerRef.current.rotation.y -= delta * 0.22;
+    innerRef.current.rotation.z += delta * 0.11;
   });
 
   return (
@@ -183,14 +207,15 @@ function CoreMachine({ variant, reducedMotion }: CoreMachineProps) {
 type HarikosCoreProps = {
   variant?: CoreVariant;
   reducedMotion?: boolean;
+  active?: boolean;
 };
 
-export default function HarikosCore({ variant = "complete", reducedMotion = false }: HarikosCoreProps) {
+export default function HarikosCore({ variant = "complete", reducedMotion = false, active = true }: HarikosCoreProps) {
   return (
     <Canvas
       dpr={[1, 1.5]}
       camera={{ position: [0, 0, 6.4], fov: 36 }}
-      frameloop={reducedMotion ? "demand" : "always"}
+      frameloop={reducedMotion || !active ? "demand" : "always"}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
     >
       <ambientLight intensity={0.5} />
@@ -198,7 +223,7 @@ export default function HarikosCore({ variant = "complete", reducedMotion = fals
       <directionalLight position={[-4, -2, 3]} intensity={1.5} color="#87724f" />
       <pointLight position={[0, 0, 1.5]} intensity={6.5} distance={5} color="#c7812d" />
       <spotLight position={[0, 4, -1]} intensity={3.2} angle={0.42} penumbra={0.7} color="#dfc59a" />
-      <CoreMachine variant={variant} reducedMotion={reducedMotion} />
+      <CoreMachine variant={variant} reducedMotion={reducedMotion} active={active} />
     </Canvas>
   );
 }

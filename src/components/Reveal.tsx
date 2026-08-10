@@ -23,10 +23,10 @@ export default function Reveal({
 
   return (
     <Component
-      initial={reducedMotion ? false : { opacity: 0, y: 26 }}
-      whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
+      initial={reducedMotion ? false : { opacity: 0, y: 28, scale: 0.988, filter: "blur(7px)" }}
+      whileInView={reducedMotion ? undefined : { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
       viewport={{ once: true, amount: 0.16 }}
-      transition={{ duration: 0.75, delay, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.78, delay, ease: [0.16, 1, 0.3, 1] }}
       className={className}
       {...props}
     >
